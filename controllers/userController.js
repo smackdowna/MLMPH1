@@ -580,6 +580,6 @@ async function calculateTotalCountsForAllUsers() {
   }
 }
 
-setInterval(calculateTotalCountsForAllUsers, 5000);
+setInterval(calculateTotalCountsForAllUsers, 1000);
 
 ////////////////////////////////////////////////////////////////////////
