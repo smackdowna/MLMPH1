@@ -71,42 +71,83 @@ async function calculateBinaryBonus(user) {
   }
 }
 
+async function calculateTotalCountsForAllUsers() {
+  try {
+    // Find all users
+    const users = await User.find();
+
+    // Iterate through each user
+    for (const user of users) {
+      // Calculate counts for the user
+      await getUsersAndCounts(user.own_id);
+    }
+  } catch (error) {
+    console.error(`Error calculating counts for all users: ${error}`);
+  }
+}
+
+// Function to get users and counts recursively
+async function getUsersAndCounts(parentId) {
+  const users = await User.find({ parent_id: parentId });
+  const counts = { left: 0, right: 0 };
+
+  for (const user of users) {
+    const childrenCounts = await getUsersAndCounts(user.own_id);
+    counts.left +=
+      user.position === "Left"
+        ? 1 + childrenCounts.left + childrenCounts.right
+        : 0;
+    counts.right +=
+      user.position === "Right"
+        ? 1 + childrenCounts.left + childrenCounts.right
+        : 0;
+  }
+
+  // Update TotalLeftCount and TotalRightCount in the database
+  await User.updateOne(
+    { own_id: parentId },
+    { TotalLeftCount: counts.left, TotalRightCount: counts.right }
+  );
+
+  return counts;
+}
+
 // Register a user and calculate bonuses
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
   const { name, email, own_id, sponsor_id, position, password } = req.body;
 
   const user1 = await User.findOne({ own_id: own_id });
 
-  if (user1){
+  if (user1) {
     return next(new ErrorHandler("This Number is already registered", 400));
-  }  
+  }
 
   const sponsor = await User.findOne({ own_id: sponsor_id });
 
-  if (!sponsor){
+  if (!sponsor) {
     return next(new ErrorHandler("Sponsor Number doesn't exist", 400));
   }
   const parentId = await getParentId(position, sponsor_id);
-  try{
-  // Calculate Direct Referral Bonus
-  await calculateDirectReferralBonus(sponsor_id);
+  try {
+    // Calculate Direct Referral Bonus
+    await calculateDirectReferralBonus(sponsor_id);
 
-  // Create the user
-  const user = await User.create({
-    name,
-    email,
-    own_id,
-    sponsor_id,
-    parent_id: parentId,
-    position,
-    password, // Remember to hash the password before saving
-  });
+    // Create the user
+    const user = await User.create({
+      name,
+      email,
+      own_id,
+      sponsor_id,
+      parent_id: parentId,
+      position,
+      password, // Remember to hash the password before saving
+    });
 
-  // Calculate Binary Bonus for the parent (A) at the time of registration
-  await calculateBinaryBonus(user);
-
-  sendToken(user, 201, res);
-  }catch (error) {
+    // Calculate Binary Bonus for the parent (A) at the time of registration
+    await calculateBinaryBonus(user);
+    sendToken(user, 201, res);
+    calculateTotalCountsForAllUsers();
+  } catch (error) {
     // If there's an error, stop further execution
     return next(error);
   }
@@ -388,32 +429,6 @@ exports.getMyUserTree = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-// Function to get users and counts recursively
-async function getUsersAndCounts(parentId) {
-  const users = await User.find({ parent_id: parentId });
-  const counts = { left: 0, right: 0 };
-
-  for (const user of users) {
-    const childrenCounts = await getUsersAndCounts(user.own_id);
-    counts.left +=
-      user.position === "Left"
-        ? 1 + childrenCounts.left + childrenCounts.right
-        : 0;
-    counts.right +=
-      user.position === "Right"
-        ? 1 + childrenCounts.left + childrenCounts.right
-        : 0;
-  }
-
-  // Update TotalLeftCount and TotalRightCount in the database
-  await User.updateOne(
-    { own_id: parentId },
-    { TotalLeftCount: counts.left, TotalRightCount: counts.right }
-  );
-
-  return counts;
-}
-
 //get my Income
 exports.getMyIncome = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.user.id);
@@ -565,21 +580,5 @@ exports.getAllPendingRequest = catchAsyncErrors(async (req, res, next) => {
 
 //Script for calculatting Total Counts of user on left and Right
 // Function to calculate total counts for all users
-async function calculateTotalCountsForAllUsers() {
-  try {
-    // Find all users
-    const users = await User.find();
-
-    // Iterate through each user
-    for (const user of users) {
-      // Calculate counts for the user
-      await getUsersAndCounts(user.own_id);
-    }
-  } catch (error) {
-    console.error(`Error calculating counts for all users: ${error}`);
-  }
-}
-
-setInterval(calculateTotalCountsForAllUsers, 1000);
 
 ////////////////////////////////////////////////////////////////////////
