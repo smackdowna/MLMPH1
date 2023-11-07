@@ -71,7 +71,7 @@ async function calculateBinaryBonus(user) {
   }
 }
 
-async function calculateTotalCountsForAllUsers() {
+async function calculateeTotalCountsForAllUsers() {
   try {
     // Find all users
     const users = await User.find();
@@ -145,8 +145,9 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
 
     // Calculate Binary Bonus for the parent (A) at the time of registration
     await calculateBinaryBonus(user);
+    await calculateeTotalCountsForAllUsers();
     sendToken(user, 201, res);
-    calculateTotalCountsForAllUsers();
+    
   } catch (error) {
     // If there's an error, stop further execution
     return next(error);
