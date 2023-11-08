@@ -163,10 +163,6 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
       password, // Remember to hash the password before saving
     });
 
-    // Calculate Binary Bonus for the parent (A) at the time of registration
-
-    await calculateeTotalCountsForAllUsers();
-
     sendToken(user, 201, res);
   } catch (error) {
     // If there's an error, stop further execution
@@ -378,6 +374,8 @@ exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
 
   //calcualte binary bonous
   await calculateBinaryBonus(user);
+
+  await calculateeTotalCountsForAllUsers();
 
   await User.findByIdAndUpdate(req.params.id, newUserData, {
     new: true,
