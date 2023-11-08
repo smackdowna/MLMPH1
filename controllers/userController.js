@@ -1,4 +1,5 @@
 const User = require("../models/userModal");
+const binary = require("../models/binaryIncome");
 const Income = require("../models/incomeModal");
 const transactions = require("../models/transactionsModal");
 const product = require("../models/productTransactionModal");
@@ -35,6 +36,17 @@ async function calculateDirectReferralBonus(sponsorId) {
     if (sponsor) {
       sponsor.income += directReferralBonus;
       await sponsor.save();
+
+      await binary.create({
+        user_id: sponsor.id,
+        own_id: sponsor.own_id,
+        name: sponsor.name,
+        email: sponsor.email,
+        inc: directReferralBonus,
+        date: new Date(),
+        month: new Date().toLocaleString("default", { month: "long" }),
+        year: new Date().getFullYear(),
+      });
     }
   } catch (error) {
     throw error;
@@ -64,6 +76,17 @@ async function calculateBinaryBonus(user) {
         const binaryBonus = 11500 * bonusPercentage; // Adjust productPrice as needed
         parent.income += binaryBonus;
         await parent.save();
+
+        await binary.create({
+          user_id: parent.id,
+          own_id: parent.own_id,
+          name: parent.name,
+          email: parent.email,
+          inc: binaryBonus,
+          date: new Date(),
+          month: new Date().toLocaleString("default", { month: "long" }),
+          year: new Date().getFullYear(),
+        });
       }
     }
   } catch (error) {
@@ -129,9 +152,6 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
   }
   const parentId = await getParentId(position, sponsor_id);
   try {
-    // Calculate Direct Referral Bonus
-    await calculateDirectReferralBonus(sponsor_id);
-
     // Create the user
     const user = await User.create({
       name,
@@ -144,10 +164,10 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
     });
 
     // Calculate Binary Bonus for the parent (A) at the time of registration
-    await calculateBinaryBonus(user);
+
     await calculateeTotalCountsForAllUsers();
+
     sendToken(user, 201, res);
-    
   } catch (error) {
     // If there's an error, stop further execution
     return next(error);
@@ -344,11 +364,20 @@ exports.getSingleUser = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-// update User Role -- Admin
+// update User status -- Admin
 exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
   const newUserData = {
     status: req.body.status,
   };
+
+  const user = await User.findById(req.params.id);
+  const spon = user.sponsor_id;
+
+  // Calculate Direct Referral Bonus
+  await calculateDirectReferralBonus(spon);
+
+  //calcualte binary bonous
+  await calculateBinaryBonus(user);
 
   await User.findByIdAndUpdate(req.params.id, newUserData, {
     new: true,
@@ -358,6 +387,27 @@ exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
+    message: "Status changed successully",
+  });
+});
+
+//monthly binary income
+exports.binaryMonthly = catchAsyncErrors(async (req, res, next) => {
+  const income = await binary.find({ user_id: req.user.id });
+
+  const monthlyIncome = income.reduce((acc, income) => {
+    const { month, inc } = income;
+    if (!acc[month]) {
+      acc[month] = 0;
+    }
+    acc[month] += inc;
+    return acc;
+  }, {});
+
+
+  res.status(200).json({
+    success: true,
+    monthlyIncome
   });
 });
 
