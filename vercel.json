@@ -2,11 +2,6 @@
     "version": 2,
     "name": "mlm",
     "builds": [{ "src": "server.js", "use": "@vercel/node" }],
-    "routes": [{ "src": "/(.*)", "dest": "/server.js" }],
-    "functions": {
-      "scheduled-task": {
-        "schedule": "*/10 * * * *"
-      }
-    }
+    "routes": [{ "src": "/(.*)", "dest": "/server.js" }]
   }
   
