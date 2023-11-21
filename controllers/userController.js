@@ -631,3 +631,102 @@ exports.getAllPendingRequest = catchAsyncErrors(async (req, res, next) => {
 // Function to calculate total counts for all users
 
 ////////////////////////////////////////////////////////////////////////
+
+
+
+// Function to calculate income for a user based on totalLeftCount and totalRightCount
+function calculateIncome(totalLeftCount, totalRightCount, lastMinCount, lastLeftCarryForward, lastRightCarryForward) {
+  // Check for changes in TotalLeftCount and TotalRightCount
+  if (totalLeftCount === lastLeftCarryForward && totalRightCount === lastRightCarryForward) {
+    return { income: 0, minCount: 0, leftCarryForward: 0, rightCarryForward: 0 };
+  }
+
+  // Calculate the minimum count based on the last entry
+  const minCount = Math.min(totalLeftCount, totalRightCount) - lastMinCount;
+
+  // Calculate income
+  const productPrice = 11500; // Adjust product price as needed
+  const bonusPercentage = 0.05; // 5% bonus
+  const income = minCount * productPrice * bonusPercentage;
+
+  // Calculate new carry forwards
+  const newTotalLeftCount = totalLeftCount - minCount;
+  const newTotalRightCount = totalRightCount - minCount;
+  const leftCarryForward = lastLeftCarryForward + (totalLeftCount - newTotalLeftCount);
+  const rightCarryForward = lastRightCarryForward + (totalRightCount - newTotalRightCount);
+
+  return { income, minCount, leftCarryForward, rightCarryForward };
+}
+
+
+// Function to calculate income for all users
+async function calculateIncomeForAllUsers() {
+  try {
+    // Check if the Income collection is empty
+    const isFirstRun = !(await Income.findOne());
+
+    // Find all users
+    const users = await User.find();
+
+    // Initialize an array to store user incomes
+    const userIncomes = [];
+
+    // Iterate through each user
+    for (const user of users) {
+      // Find the last income entry for the user
+      const lastIncomeEntry = await Income.findOne({ user_id: user._id }, {}, { sort: { date: -1 } });
+
+      // Check if it's the first run or there's a change in counts
+      if (
+        isFirstRun ||
+        (lastIncomeEntry &&
+          (lastIncomeEntry.TotalLeftCount !== user.TotalLeftCount ||
+            lastIncomeEntry.TotalRightCount !== user.TotalRightCount))
+      ) {
+        // Calculate income details for the user
+        const { income, minCount, leftCarryForward, rightCarryForward } = calculateIncome(
+          user.TotalLeftCount,
+          user.TotalRightCount,
+          lastIncomeEntry ? lastIncomeEntry.minCount : 0,
+          lastIncomeEntry ? lastIncomeEntry.leftCarryForward : 0,
+          lastIncomeEntry ? lastIncomeEntry.rightCarryForward : 0
+        );
+
+        // Add user details and income to the array
+        userIncomes.push({
+          user_id: user._id,
+          own_id: user.own_id,
+          name: user.name,
+          email: user.email,
+          income: income,
+          minCount: minCount,
+          leftCarryForward: leftCarryForward,
+          rightCarryForward: rightCarryForward,
+          date: new Date(),
+          month: new Date().toLocaleString('default', { month: 'long' }),
+          year: new Date().getFullYear(),
+        });
+      }
+    }
+
+    // Insert the calculated incomes into the Income table
+    await Income.insertMany(userIncomes);
+
+    return userIncomes;
+  } catch (error) {
+    console.error(`Error calculating income for all users: ${error}`);
+    return [];
+  }
+}
+
+// Example usage
+exports = async (req, res) => {
+  try {
+    const userIncomes = await calculateIncomeForAllUsers();
+    console.log(`Income calculation successful at ${new Date()}. Result:`, userIncomes);
+    res.status(200).send('Income calculation successful.');
+  } catch (error) {
+    console.error(`Error during income calculation at ${new Date()}: ${error}`);
+    res.status(500).send('Internal server error.');
+  }
+};
