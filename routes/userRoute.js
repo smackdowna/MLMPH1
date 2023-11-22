@@ -22,6 +22,7 @@ const {
   getAllProductTransactions,
   getAllPendingRequest,
   binaryMonthly,
+  monthlyIncome,
 } = require("../controllers/userController");
 const { isAuthenticatedUser, authorizeRoles } = require("../middlewares/auth");
 
@@ -99,6 +100,9 @@ router
 
 //binary monthly income
 router.route("/binaryincome").get(isAuthenticatedUser,binaryMonthly);
+
+//monthly income
+router.route("/monthlyincome").post(isAuthenticatedUser,authorizeRoles("admin"),monthlyIncome);
 
 
 
