@@ -42,67 +42,67 @@ router.route("/password/forgot").post(forgotPassword);
 router.route("/password/reset/:token").put(resetPassword);
 
 //get my profile
-router.route("/me").get(isAuthenticatedUser, getUserDetails);
+router.route("/me").get( getUserDetails);
 
 //getmy income
-router.route("/me/income").get(isAuthenticatedUser, getMyIncome);
+router.route("/me/income").get( getMyIncome);
 
 //get my user tree or downline
-router.route("/me/tree").get(isAuthenticatedUser, getMyUserTree);
+router.route("/me/tree").get( getMyUserTree);
 
 //change password
-router.route("/password/update").put(isAuthenticatedUser, updatePassword);
+router.route("/password/update").put( updatePassword);
 
 //update profile
-router.route("/me/update").put(isAuthenticatedUser, updateProfile);
+router.route("/me/update").put( updateProfile);
 
 //get all user--Admin
 router
   .route("/admin/users")
-  .get(isAuthenticatedUser,  getAllUser);
+  .get(  getAllUser);
 
 router
   .route("/admin/user/:id")
-  .get(isAuthenticatedUser,  getSingleUser)
-  .put(isAuthenticatedUser,  updateUserRole);
+  .get(  getSingleUser)
+  .put(  updateUserRole);
 
 router
   .route("/all/income")
-  .get(isAuthenticatedUser,  getAllIncome);
+  .get(  getAllIncome);
 
 //send Money--user
-router.route("/sendmoney").post(isAuthenticatedUser, sendMoney);
+router.route("/sendmoney").post( sendMoney);
 
 //my transaction
-router.route("/mytransactions").get(isAuthenticatedUser, getMyTransactions);
+router.route("/mytransactions").get( getMyTransactions);
 
 //get all transaction--Admin
 router
   .route("/admin/transactions")
-  .get(isAuthenticatedUser,  getAllTransactions);
+  .get(  getAllTransactions);
 
 //buy product
-router.route("/buyproduct").post(isAuthenticatedUser, buyProduct);
+router.route("/buyproduct").post( buyProduct);
 
 //my product purchase history
-router.route("/mypurchase").get(isAuthenticatedUser, getMyProductTransactions);
+router.route("/mypurchase").get( getMyProductTransactions);
 
 //get all product transaction--Admin
 router
   .route("/admin/producttransactions")
-  .get(isAuthenticatedUser,  getAllProductTransactions);
+  .get( getAllProductTransactions);
 
 //get all Pending Request
 router
   .route("/admin/pendingrequests")
-  .get(isAuthenticatedUser,  getAllPendingRequest);
+  .get(getAllPendingRequest);
 
 
 //binary monthly income
-router.route("/binaryincome").get(isAuthenticatedUser,binaryMonthly);
+router.route("/binaryincome").get(binaryMonthly);
 
 //monthly income
-router.route("/monthlyincome").post(isAuthenticatedUser,monthlyIncome);
+router.route("/monthlyincome").post(monthlyIncome);
 
 
 
