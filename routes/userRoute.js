@@ -87,12 +87,12 @@ router.route("/mypurchase").get(isAuthenticatedUser, getMyProductTransactions);
 //get all product transaction--Admin
 router
   .route("/admin/producttransactions")
-  .get(isAuthenticatedUser, getAllProductTransactions);
+  .get( getAllProductTransactions);
 
 //get all Pending Request
 router
   .route("/admin/pendingrequests")
-  .get(isAuthenticatedUser, getAllPendingRequest);
+  .get( getAllPendingRequest);
 
 //binary monthly income
 router.route("/binaryincome").get(isAuthenticatedUser, binaryMonthly);
