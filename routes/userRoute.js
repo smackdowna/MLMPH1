@@ -23,6 +23,7 @@ const {
   getAllPendingRequest,
   binaryMonthly,
   monthlyIncome,
+  getAllDeadID,
 } = require("../controllers/userController");
 const { isAuthenticatedUser } = require("../middlewares/auth");
 
@@ -99,5 +100,11 @@ router.route("/binaryincome").get(isAuthenticatedUser, binaryMonthly);
 
 //generate monthly income
 router.route("/monthlyincome").post(isAuthenticatedUser, monthlyIncome);
+
+//get all dead id
+router
+  .route("/admin/deadId")
+  .get( getAllDeadID);
+
 
 module.exports = router;

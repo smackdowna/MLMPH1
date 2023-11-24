@@ -647,6 +647,19 @@ exports.getAllPendingRequest = catchAsyncErrors(async (req, res, next) => {
 });
 
 
+//get All new user Pending request
+exports.getAllDeadID = catchAsyncErrors(async (req, res, next) => {
+  const count = await User.countDocuments({ status: "Dead" });
+  const user = await User.find({ status: "Dead" });
+
+  res.status(200).json({
+    success: true,
+    count,
+    user,
+  });
+});
+
+
 // Function to calculate income for a user based on totalLeftCount and totalRightCount
 function calculateIncome(totalLeftCount, totalRightCount, lastMinCount, lastLeftCarryForward, lastRightCarryForward) {
   // Check for changes in TotalLeftCount and TotalRightCount
