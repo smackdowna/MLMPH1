@@ -63,8 +63,8 @@ router.route("/admin/users").get(isAuthenticatedUser, getAllUser);
 //update user status
 router
   .route("/admin/user/:id")
-  .get(isAuthenticatedUser, getSingleUser)
-  .put(isAuthenticatedUser, updateUserRole);
+  .get( getSingleUser)
+  .put( updateUserRole);
 
 router.route("/all/income").get(isAuthenticatedUser, getAllIncome);
 
