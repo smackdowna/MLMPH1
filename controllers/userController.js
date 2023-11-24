@@ -732,7 +732,7 @@ async function calculateIncomeForAllUsers() {
   }
 }
 
-//get All new user Pending request
+//generate monthly income
 exports.monthlyIncome = catchAsyncErrors(async (req, res, next) => {
   
   await calculateIncomeForAllUsers();
