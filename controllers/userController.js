@@ -360,54 +360,66 @@ exports.getSingleUser = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-// update User status -- Admin
-exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
-  
-  const status = '';
+// update User status Active -- Admin
+exports.updateUserRoleActive = catchAsyncErrors(async (req, res, next) => {
   const newUserData = {
     status: req.body.status,
   };
-  
-  if(status==='Active'){
-    const user = await User.findById(req.params.id);
-    const spon = user.sponsor_id;
 
-    // Calculate Direct Referral Bonus
-    await calculateDirectReferralBonus(spon);
+  const user = await User.findById(req.params.id);
 
-    //calcualte binary bonous
-    await calculateBinaryBonus(user);
+  if (!user) {
+    return next(
+      new ErrorHandler(`User does not exist with Id: ${req.params.id}`)
+    );
+  }
 
-    await calculateeTotalCountsForAllUsers();
+  const spon = user.sponsor_id;
 
-    await User.findByIdAndUpdate(req.params.id, newUserData, {
-      new: true,
-      runValidators: true,
-      useFindAndModify: false,
-    });
+  // Calculate Direct Referral Bonus
+  await calculateDirectReferralBonus(spon);
 
-    res.status(200).json({
-      success: true,
-      message: "Status changed successully",
-    });
-  }else{
-    await User.findByIdAndUpdate(req.params.id, newUserData, {
-      new: true,
-      runValidators: true,
-      useFindAndModify: false,
-    });
+  //calcualte binary bonous
+  await calculateBinaryBonus(user);
 
-    res.status(200).json({
-      success: true,
-      message: "Status changed successully",
-    });
-  }  
-  
-  
+  await calculateeTotalCountsForAllUsers();
 
+  await User.findByIdAndUpdate(req.params.id, newUserData, {
+    new: true,
+    runValidators: true,
+    useFindAndModify: false,
+  });
 
+  res.status(200).json({
+    success: true,
+    message: "User Is Activated",
+  });
+});
 
+// update User status Dead -- Admin
+exports.updateUserRoleDead = catchAsyncErrors(async (req, res, next) => {
+  const newUserData = {
+    status: req.body.status,
+  };
 
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    return next(
+      new ErrorHandler(`User does not exist with Id: ${req.params.id}`)
+    );
+  }
+
+  await User.findByIdAndUpdate(req.params.id, newUserData, {
+    new: true,
+    runValidators: true,
+    useFindAndModify: false,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "User Is Set to dead Status",
+  });
 });
 
 //monthly binary income
@@ -423,10 +435,9 @@ exports.binaryMonthly = catchAsyncErrors(async (req, res, next) => {
     return acc;
   }, {});
 
-
   res.status(200).json({
     success: true,
-    monthlyIncome
+    monthlyIncome,
   });
 });
 
@@ -646,7 +657,6 @@ exports.getAllPendingRequest = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-
 //get All new user Pending request
 exports.getAllDeadID = catchAsyncErrors(async (req, res, next) => {
   const count = await User.countDocuments({ status: "Dead" });
@@ -659,12 +669,25 @@ exports.getAllDeadID = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-
 // Function to calculate income for a user based on totalLeftCount and totalRightCount
-function calculateIncome(totalLeftCount, totalRightCount, lastMinCount, lastLeftCarryForward, lastRightCarryForward) {
+function calculateIncome(
+  totalLeftCount,
+  totalRightCount,
+  lastMinCount,
+  lastLeftCarryForward,
+  lastRightCarryForward
+) {
   // Check for changes in TotalLeftCount and TotalRightCount
-  if (totalLeftCount === lastLeftCarryForward && totalRightCount === lastRightCarryForward) {
-    return { income: 0, minCount: 0, leftCarryForward: 0, rightCarryForward: 0 };
+  if (
+    totalLeftCount === lastLeftCarryForward &&
+    totalRightCount === lastRightCarryForward
+  ) {
+    return {
+      income: 0,
+      minCount: 0,
+      leftCarryForward: 0,
+      rightCarryForward: 0,
+    };
   }
 
   // Calculate the minimum count based on the last entry
@@ -678,12 +701,13 @@ function calculateIncome(totalLeftCount, totalRightCount, lastMinCount, lastLeft
   // Calculate new carry forwards
   const newTotalLeftCount = totalLeftCount - minCount;
   const newTotalRightCount = totalRightCount - minCount;
-  const leftCarryForward = lastLeftCarryForward + (totalLeftCount - newTotalLeftCount);
-  const rightCarryForward = lastRightCarryForward + (totalRightCount - newTotalRightCount);
+  const leftCarryForward =
+    lastLeftCarryForward + (totalLeftCount - newTotalLeftCount);
+  const rightCarryForward =
+    lastRightCarryForward + (totalRightCount - newTotalRightCount);
 
   return { income, minCount, leftCarryForward, rightCarryForward };
 }
-
 
 // Function to calculate income for all users
 async function calculateIncomeForAllUsers() {
@@ -700,7 +724,11 @@ async function calculateIncomeForAllUsers() {
     // Iterate through each user
     for (const user of users) {
       // Find the last income entry for the user
-      const lastIncomeEntry = await Income.findOne({ user_id: user._id }, {}, { sort: { date: -1 } });
+      const lastIncomeEntry = await Income.findOne(
+        { user_id: user._id },
+        {},
+        { sort: { date: -1 } }
+      );
 
       // Check if it's the first run or there's a change in counts
       if (
@@ -710,13 +738,14 @@ async function calculateIncomeForAllUsers() {
             lastIncomeEntry.TotalRightCount !== user.TotalRightCount))
       ) {
         // Calculate income details for the user
-        const { income, minCount, leftCarryForward, rightCarryForward } = calculateIncome(
-          user.TotalLeftCount,
-          user.TotalRightCount,
-          lastIncomeEntry ? lastIncomeEntry.minCount : 0,
-          lastIncomeEntry ? lastIncomeEntry.leftCarryForward : 0,
-          lastIncomeEntry ? lastIncomeEntry.rightCarryForward : 0
-        );
+        const { income, minCount, leftCarryForward, rightCarryForward } =
+          calculateIncome(
+            user.TotalLeftCount,
+            user.TotalRightCount,
+            lastIncomeEntry ? lastIncomeEntry.minCount : 0,
+            lastIncomeEntry ? lastIncomeEntry.leftCarryForward : 0,
+            lastIncomeEntry ? lastIncomeEntry.rightCarryForward : 0
+          );
 
         // Add user details and income to the array
         userIncomes.push({
@@ -729,7 +758,7 @@ async function calculateIncomeForAllUsers() {
           leftCarryForward: leftCarryForward,
           rightCarryForward: rightCarryForward,
           date: new Date(),
-          month: new Date().toLocaleString('default', { month: 'long' }),
+          month: new Date().toLocaleString("default", { month: "long" }),
           year: new Date().getFullYear(),
         });
       }
@@ -747,13 +776,10 @@ async function calculateIncomeForAllUsers() {
 
 //generate monthly income
 exports.monthlyIncome = catchAsyncErrors(async (req, res, next) => {
-  
   await calculateIncomeForAllUsers();
 
   res.status(200).json({
     success: true,
-    message:"Income generated successfully"
-    
+    message: "Income generated successfully",
   });
 });
-

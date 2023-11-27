@@ -24,8 +24,10 @@ const {
   binaryMonthly,
   monthlyIncome,
   getAllDeadID,
+  updateUserRoleDead,
+  updateUserRoleActive,
 } = require("../controllers/userController");
-const { isAuthenticatedUser } = require("../middlewares/auth");
+const { isAuthenticatedUser, authorizeRoles } = require("../middlewares/auth");
 
 const router = express.Router();
 //Register
@@ -58,13 +60,14 @@ router.route("/password/update").put(isAuthenticatedUser, updatePassword);
 router.route("/me/update").put(isAuthenticatedUser, updateProfile);
 
 //get all user--Admin
-router.route("/admin/users").get(isAuthenticatedUser, getAllUser);
+router.route("/admin/users").get(isAuthenticatedUser,authorizeRoles("admin"), getAllUser);
 
 //update user status
 router
   .route("/admin/user/:id")
-  .get( getSingleUser)
-  .put( updateUserRole);
+  .get(isAuthenticatedUser,authorizeRoles("admin"), getSingleUser)
+  .put(isAuthenticatedUser,authorizeRoles("admin"), updateUserRoleActive)
+  .put(isAuthenticatedUser,authorizeRoles("admin"),updateUserRoleDead);
 
 router.route("/all/income").get(isAuthenticatedUser, getAllIncome);
 
@@ -77,7 +80,7 @@ router.route("/mytransactions").get(isAuthenticatedUser, getMyTransactions);
 //get all transaction--Admin
 router
   .route("/admin/transactions")
-  .get(isAuthenticatedUser, getAllTransactions);
+  .get(isAuthenticatedUser,authorizeRoles("admin"), getAllTransactions);
 
 //buy product
 router.route("/buyproduct").post(isAuthenticatedUser, buyProduct);
@@ -88,23 +91,23 @@ router.route("/mypurchase").get(isAuthenticatedUser, getMyProductTransactions);
 //get all product transaction--Admin
 router
   .route("/admin/producttransactions")
-  .get( getAllProductTransactions);
+  .get(isAuthenticatedUser,authorizeRoles("admin"), getAllProductTransactions);
 
 //get all Pending Request
 router
   .route("/admin/pendingrequests")
-  .get( getAllPendingRequest);
+  .get(isAuthenticatedUser,authorizeRoles("admin"), getAllPendingRequest);
 
 //binary monthly income
 router.route("/binaryincome").get(isAuthenticatedUser, binaryMonthly);
 
 //generate monthly income
-router.route("/monthlyincome").post(isAuthenticatedUser, monthlyIncome);
+router.route("/monthlyincome").post(isAuthenticatedUser,authorizeRoles("admin"), monthlyIncome);
 
 //get all dead id
-router
+router  
   .route("/admin/deadId")
-  .get( getAllDeadID);
+  .get(isAuthenticatedUser,authorizeRoles("admin"), getAllDeadID);
 
 
 module.exports = router;
