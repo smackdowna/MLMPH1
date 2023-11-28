@@ -10,7 +10,6 @@ const {
   updateProfile,
   getAllUser,
   getSingleUser,
-  updateUserRole,
   getMyUserTree,
   getMyIncome,
   getAllIncome,
@@ -67,6 +66,9 @@ router
   .route("/admin/user/:id")
   .get(isAuthenticatedUser,authorizeRoles("admin"), getSingleUser)
   .put(isAuthenticatedUser,authorizeRoles("admin"), updateUserRoleActive)
+
+router
+  .route("/admin/userdead/:id")  
   .put(isAuthenticatedUser,authorizeRoles("admin"),updateUserRoleDead);
 
 router.route("/all/income").get(isAuthenticatedUser, getAllIncome);

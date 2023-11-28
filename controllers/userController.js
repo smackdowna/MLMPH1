@@ -32,7 +32,7 @@ async function calculateDirectReferralBonus(sponsorId) {
     const bonusPercentage = 0.15;
     const directReferralBonus = 11000 * bonusPercentage; // Adjust productPrice as needed
 
-    const sponsor = await User.findOne({ own_id: sponsorId });
+    const sponsor = await User.findOne({ own_id: sponsorId, status: "Active" });
     if (sponsor) {
       sponsor.income += directReferralBonus;
       await sponsor.save();
@@ -59,7 +59,7 @@ async function calculateBinaryBonus(user) {
     // Assuming 10% binary bonus for a balanced pair
     const bonusPercentage = 0.1;
 
-    const parent = await User.findOne({ own_id: user.parent_id });
+    const parent = await User.findOne({ own_id: user.parent_id, status: "Active" });
     if (parent) {
       // Fetch the parent's left and right children
       const leftChild = await User.findOne({
@@ -73,7 +73,7 @@ async function calculateBinaryBonus(user) {
 
       if (leftChild && rightChild) {
         // Both left and right children exist, so a balanced pair is completed
-        const binaryBonus = 11000 * bonusPercentage; // Adjust productPrice as needed
+        const binaryBonus = 5500 * bonusPercentage; // Adjust productPrice as needed
         parent.income += binaryBonus;
         await parent.save();
 
@@ -97,7 +97,7 @@ async function calculateBinaryBonus(user) {
 async function calculateeTotalCountsForAllUsers() {
   try {
     // Find all users
-    const users = await User.find();
+    const users = await User.find({ status: "Active" });
 
     // Iterate through each user
     for (const user of users) {
@@ -111,7 +111,7 @@ async function calculateeTotalCountsForAllUsers() {
 
 // Function to get users and counts recursively
 async function getUsersAndCounts(parentId) {
-  const users = await User.find({ parent_id: parentId });
+  const users = await User.find({ parent_id: parentId, status: "Active" });
   const counts = { left: 0, right: 0 };
 
   for (const user of users) {
@@ -376,19 +376,20 @@ exports.updateUserRoleActive = catchAsyncErrors(async (req, res, next) => {
 
   const spon = user.sponsor_id;
 
+  await User.findByIdAndUpdate(req.params.id, newUserData, {
+    new: true,
+    runValidators: true,
+    useFindAndModify: false,
+  });
+
   // Calculate Direct Referral Bonus
   await calculateDirectReferralBonus(spon);
 
   //calcualte binary bonous
   await calculateBinaryBonus(user);
 
-  await calculateeTotalCountsForAllUsers();
 
-  await User.findByIdAndUpdate(req.params.id, newUserData, {
-    new: true,
-    runValidators: true,
-    useFindAndModify: false,
-  });
+  await calculateeTotalCountsForAllUsers();
 
   res.status(200).json({
     success: true,
