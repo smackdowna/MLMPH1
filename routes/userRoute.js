@@ -59,7 +59,7 @@ router.route("/password/update").put(isAuthenticatedUser, updatePassword);
 router.route("/me/update").put(isAuthenticatedUser, updateProfile);
 
 //get all user--Admin
-router.route("/admin/users").get(isAuthenticatedUser,authorizeRoles("admin"), getAllUser);
+router.route("/admin/users").get(isAuthenticatedUser, getAllUser);
 
 //update user status
 router
