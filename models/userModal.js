@@ -75,7 +75,10 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now(),
   },
-
+  productPurchased:{
+    type:String,
+    default:"False",
+  },
   resetPasswordToken: String,
   resetPasswordExpire: String,
 });

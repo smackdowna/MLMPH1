@@ -347,6 +347,7 @@ exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
 // Get single user (admin)
 exports.getSingleUser = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.params.id);
+  const directSponsordUser = await User.countDocuments({sponsor_id:user.own_id})
 
   if (!user) {
     return next(
@@ -357,6 +358,8 @@ exports.getSingleUser = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     user,
+    directSponsordUser
+
   });
 });
 
@@ -608,6 +611,7 @@ exports.buyProduct = catchAsyncErrors(async (req, res, next) => {
 
   // Deduct product cost from wallet balance
   user.wallet -= productCost;
+  user.productPurchased = "True";
   await user.save();
 
   const productspurchase = new product({
