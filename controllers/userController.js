@@ -626,11 +626,11 @@ exports.buyProduct = catchAsyncErrors(async (req, res, next) => {
 //view  my puchased history --user
 exports.getMyProductTransactions = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.user.id);
-  const produc = await product.find({ Buy_user_own_id: user.own_id });
+  const trans = await product.find({ Buy_user_own_id: user.own_id });
 
   res.status(200).json({
     success: true,
-    product,
+    trans,
   });
 });
 
