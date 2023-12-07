@@ -1,6 +1,7 @@
 const User = require("../models/userModal");
 const binary = require("../models/binaryIncome");
 const Income = require("../models/incomeModal");
+const Ticket = require("../models/RaiseTicketModal");
 const transactions = require("../models/transactionsModal");
 const product = require("../models/productTransactionModal");
 const ErrorHandler = require("../utils/errorHandler");
@@ -59,7 +60,10 @@ async function calculateBinaryBonus(user) {
     // Assuming 10% binary bonus for a balanced pair
     const bonusPercentage = 0.1;
 
-    const parent = await User.findOne({ own_id: user.parent_id, status: "Active" });
+    const parent = await User.findOne({
+      own_id: user.parent_id,
+      status: "Active",
+    });
     if (parent) {
       // Fetch the parent's left and right children
       const leftChild = await User.findOne({
@@ -347,7 +351,9 @@ exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
 // Get single user (admin)
 exports.getSingleUser = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.params.id);
-  const directSponsordUser = await User.countDocuments({sponsor_id:user.own_id})
+  const directSponsordUser = await User.countDocuments({
+    sponsor_id: user.own_id,
+  });
 
   if (!user) {
     return next(
@@ -358,8 +364,7 @@ exports.getSingleUser = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     user,
-    directSponsordUser
-
+    directSponsordUser,
   });
 });
 
@@ -390,7 +395,6 @@ exports.updateUserRoleActive = catchAsyncErrors(async (req, res, next) => {
 
   //calcualte binary bonous
   await calculateBinaryBonus(user);
-
 
   await calculateeTotalCountsForAllUsers();
 
@@ -540,9 +544,10 @@ exports.getAllIncome = catchAsyncErrors(async (req, res, next) => {
 exports.sendMoney = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.user.id);
 
+  const money = user.wallet;
   const { recevier_own_id, amount } = req.body;
 
-  if (user.wallet < amount) {
+  if (money < amount) {
     return res.status(400).json({ error: "Insufficient funds" });
   }
 
@@ -662,7 +667,7 @@ exports.getAllPendingRequest = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-//get All new user Pending request
+//get All dead Id
 exports.getAllDeadID = catchAsyncErrors(async (req, res, next) => {
   const count = await User.countDocuments({ status: "Dead" });
   const user = await User.find({ status: "Dead" });
@@ -788,3 +793,61 @@ exports.monthlyIncome = catchAsyncErrors(async (req, res, next) => {
     message: "Income generated successfully",
   });
 });
+
+///////////////////////////////Raise A Ticket API////////////////////////////////////
+
+//create a ticket
+exports.createTicket = catchAsyncErrors(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+
+  const { query } = req.body;
+
+  if (!query) {
+    return next(new ErrorHandler("Please Enter your query", 400));
+  }
+
+  await Ticket.create({
+    user_id: user.id,
+    own_id: user.own_id,
+    name: user.name,
+    issue: query,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Your query is submitted successfully",
+  });
+});
+
+// Get all Ticket(admin)
+exports.getAllTickets = catchAsyncErrors(async (req, res, next) => {
+  const ticketCount = await Ticket.countDocuments();
+  const ticket = await Ticket.find();
+
+  if (!ticket || !ticketCount) {
+    return next(new ErrorHandler("You Don't have any Ticket", 400));
+  }
+
+  res.status(200).json({
+    success: true,
+    ticketCount,
+    ticket,
+  });
+});
+
+// // update ticket status-- Admin
+// exports.updateTicketStatus = catchAsyncErrors(async (req, res, next) => {
+//   const {status}= req.body;
+
+//   const ticket = await Ticket.find({user_id:req.params.id});
+
+//   ticket.status = status;
+
+//   await ticket.save({ validateBeforeSave: false });
+  
+
+//   res.status(200).json({
+//     success: true,
+//     message: "Ticket status Changed sucssfully",
+//   });
+// });
