@@ -124,8 +124,8 @@ router
   .route("/admin/gettickets")
   .get(isAuthenticatedUser, authorizeRoles("admin"), getAllTickets);
 
-// router
-//   .route("/admin/userticket/:id")
-//   .put(isAuthenticatedUser, authorizeRoles("admin"), updateTicketStatus);
+router
+  .route("/admin/userticket/:id")
+  .put(isAuthenticatedUser, authorizeRoles("admin"), updateTicketStatus);
 
 module.exports = router;

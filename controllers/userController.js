@@ -835,19 +835,28 @@ exports.getAllTickets = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-// // update ticket status-- Admin
-// exports.updateTicketStatus = catchAsyncErrors(async (req, res, next) => {
-//   const {status}= req.body;
+// update User status Dead -- Admin
+exports.updateTicketStatus = catchAsyncErrors(async (req, res, next) => {
+  const newUserData = {
+    status: req.body.status,
+  };
 
-//   const ticket = await Ticket.find({user_id:req.params.id});
+  const ticket = await Ticket.findById(req.params.id);
 
-//   ticket.status = status;
+  if (!ticket) {
+    return next(
+      new ErrorHandler(`Ticket does not exist with Id: ${req.params.id}`)
+    );
+  }
 
-//   await ticket.save({ validateBeforeSave: false });
-  
+  await Ticket.findByIdAndUpdate(req.params.id, newUserData, {
+    new: true,
+    runValidators: true,
+    useFindAndModify: false,
+  });
 
-//   res.status(200).json({
-//     success: true,
-//     message: "Ticket status Changed sucssfully",
-//   });
-// });
+  res.status(200).json({
+    success: true,
+    message: "Ticket is updated successully",
+  });
+});
