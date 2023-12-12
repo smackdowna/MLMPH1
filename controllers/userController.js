@@ -69,15 +69,17 @@ async function calculateBinaryBonus(user) {
       const leftChild = await User.findOne({
         parent_id: parent.own_id,
         position: "Left",
+        status: "Active",
       });
       const rightChild = await User.findOne({
         parent_id: parent.own_id,
         position: "Right",
+        status: "Active",
       });
 
       if (leftChild && rightChild) {
         // Both left and right children exist, so a balanced pair is completed
-        const binaryBonus = 5500 * bonusPercentage; // Adjust productPrice as needed
+        const binaryBonus = 11000 * bonusPercentage; // Adjust productPrice as needed
         parent.income += binaryBonus;
         await parent.save();
 
@@ -336,7 +338,7 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-// Get all users(admin)
+// Get all users
 exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
   const userCount = await User.countDocuments();
   const users = await User.find();
@@ -398,6 +400,25 @@ exports.updateUserRoleActive = catchAsyncErrors(async (req, res, next) => {
 
   await calculateeTotalCountsForAllUsers();
 
+  const direct = await User.find({ own_id: spon });
+  const own_id = direct[0].own_id;
+
+  // Find all users with the given sponsorId
+  const directReferrals = await User.find({ sponsor_id: own_id });
+
+  // Calculate the total direct referrals count
+  const totalDirectReferrals = directReferrals.length;
+
+  await User.updateOne(
+    { own_id: spon },
+    { $set: { total_direct_refral: totalDirectReferrals } },
+    {
+      new: true,
+      runValidators: true,
+      useFindAndModify: false,
+    }
+  );
+
   res.status(200).json({
     success: true,
     message: "User Is Activated",
@@ -430,22 +451,13 @@ exports.updateUserRoleDead = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-//monthly binary income
+//binary income
 exports.binaryMonthly = catchAsyncErrors(async (req, res, next) => {
   const income = await binary.find({ user_id: req.user.id });
 
-  const monthlyIncome = income.reduce((acc, income) => {
-    const { month, inc } = income;
-    if (!acc[month]) {
-      acc[month] = 0;
-    }
-    acc[month] += inc;
-    return acc;
-  }, {});
-
   res.status(200).json({
     success: true,
-    monthlyIncome,
+    income,
   });
 });
 
@@ -822,7 +834,7 @@ exports.createTicket = catchAsyncErrors(async (req, res, next) => {
 // Get all Ticket(admin)
 exports.getAllTickets = catchAsyncErrors(async (req, res, next) => {
   const ticketCount = await Ticket.countDocuments();
-  const ticket = await Ticket.find({status:"Pending"});
+  const ticket = await Ticket.find({ status: "Pending" });
 
   if (!ticket || !ticketCount) {
     return next(new ErrorHandler("You Don't have any Ticket", 400));
@@ -835,7 +847,7 @@ exports.getAllTickets = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-// update User status Dead -- Admin
+// update Ticket status -- Admin
 exports.updateTicketStatus = catchAsyncErrors(async (req, res, next) => {
   const newUserData = {
     status: req.body.status,
@@ -858,5 +870,13 @@ exports.updateTicketStatus = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "Ticket is updated successully",
+  });
+});
+
+//Total direct Refraal count
+exports.total_direct_refral = catchAsyncErrors(async (req, res, next) => {
+  const user = await User.findById(req.params.id);
+  const directReferralCount = await User.countDocuments({
+    sponsor_id: user.sponsor_id,
   });
 });

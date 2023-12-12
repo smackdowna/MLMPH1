@@ -79,6 +79,10 @@ const userSchema = new mongoose.Schema({
     type:String,
     default:"False",
   },
+  total_direct_refral:{
+    type: Number,
+    default: 0,
+  },
   resetPasswordToken: String,
   resetPasswordExpire: String,
 });
