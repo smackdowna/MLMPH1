@@ -455,9 +455,18 @@ exports.updateUserRoleDead = catchAsyncErrors(async (req, res, next) => {
 exports.binaryMonthly = catchAsyncErrors(async (req, res, next) => {
   const income = await binary.find({ user_id: req.user.id });
 
+  const monthlyIncome = income.reduce((acc, income) => {
+    const { month, inc } = income;
+    if (!acc[month]) {
+      acc[month] = 0;
+    }
+    acc[month] += inc;
+    return acc;
+  }, {});
+
   res.status(200).json({
     success: true,
-    income,
+    monthlyIncome,
   });
 });
 
