@@ -4,14 +4,25 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/userModal");
 
 exports.isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
-  
-  const myHeaders = req.headers;
-  
-  console.log('This is header',myHeaders)
-  
-  const { token } = req.cookies;
+  const authHeader = req.headers['authorization'];
 
-  console.log('This is token',token)
+  console.log(authHeader);
+  if (!authHeader) {
+    return res.status(401).json({ error: 'Unauthorized - Missing Authorization header' });
+  }
+
+  // Check the format of the Authorization header (e.g., Bearer Token)
+  const [authType, authToken] = authHeader.split(' ');
+
+  console.log(authType);
+  console.log(authToken);
+
+  if (authType.toLowerCase() !== 'bearer' || !authToken) {
+    return res.status(401).json({ error: 'Unauthorized - Invalid Authorization header format' });
+  }
+  const token = authToken;
+
+  console.log("This is token", token);
 
   if (!token) {
     return next(new ErrorHandler("Please Login to access this resource", 401));
