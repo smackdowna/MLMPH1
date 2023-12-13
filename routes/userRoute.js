@@ -67,12 +67,12 @@ router.route("/admin/users").get(isAuthenticatedUser, getAllUser);
 //update user status
 router
   .route("/admin/user/:id")
-  .get(isAuthenticatedUser,  getSingleUser)
-  .put(isAuthenticatedUser,  updateUserRoleActive);
+  .get(isAuthenticatedUser, authorizeRoles("admin"), getSingleUser)
+  .put(isAuthenticatedUser, authorizeRoles("admin"), updateUserRoleActive);
 
 router
   .route("/admin/userdead/:id")
-  .put(isAuthenticatedUser,  updateUserRoleDead);
+  .put(isAuthenticatedUser, authorizeRoles("admin"), updateUserRoleDead);
 
 router.route("/all/income").get(isAuthenticatedUser, getAllIncome);
 
@@ -85,7 +85,7 @@ router.route("/mytransactions").get(isAuthenticatedUser, getMyTransactions);
 //get all transaction--Admin
 router
   .route("/admin/transactions")
-  .get(isAuthenticatedUser,  getAllTransactions);
+  .get(isAuthenticatedUser, authorizeRoles("admin"), getAllTransactions);
 
 //buy product
 router.route("/buyproduct").post(isAuthenticatedUser, buyProduct);
@@ -96,12 +96,12 @@ router.route("/mypurchase").get(isAuthenticatedUser, getMyProductTransactions);
 //get all product transaction--Admin
 router
   .route("/admin/producttransactions")
-  .get(isAuthenticatedUser, getAllProductTransactions);
+  .get(isAuthenticatedUser, authorizeRoles("admin"), getAllProductTransactions);
 
 //get all Pending Request
 router
   .route("/admin/pendingrequests")
-  .get(isAuthenticatedUser,  getAllPendingRequest);
+  .get(isAuthenticatedUser, authorizeRoles("admin"), getAllPendingRequest);
 
 //binary monthly income
 router.route("/binaryincome").get(isAuthenticatedUser, binaryMonthly);
@@ -109,12 +109,12 @@ router.route("/binaryincome").get(isAuthenticatedUser, binaryMonthly);
 //generate monthly income
 router
   .route("/monthlyincome")
-  .post(isAuthenticatedUser,  monthlyIncome);
+  .post(isAuthenticatedUser, authorizeRoles("admin"), monthlyIncome);
 
 //get all dead id
 router
   .route("/admin/deadId")
-  .get(isAuthenticatedUser, getAllDeadID);
+  .get(isAuthenticatedUser, authorizeRoles("admin"), getAllDeadID);
 
 //create ticket
 router.route("/user/createticket").post(isAuthenticatedUser, createTicket);
@@ -122,10 +122,10 @@ router.route("/user/createticket").post(isAuthenticatedUser, createTicket);
 //get all ticket
 router
   .route("/admin/gettickets")
-  .get(isAuthenticatedUser,  getAllTickets);
+  .get(isAuthenticatedUser, authorizeRoles("admin"), getAllTickets);
 
 router
   .route("/admin/userticket/:id")
-  .put(isAuthenticatedUser,  updateTicketStatus);
+  .put(isAuthenticatedUser, authorizeRoles("admin"), updateTicketStatus);
 
 module.exports = router;
