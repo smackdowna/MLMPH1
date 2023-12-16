@@ -821,7 +821,7 @@ exports.createTicket = catchAsyncErrors(async (req, res, next) => {
 
 // Get all Ticket(admin)
 exports.getAllTickets = catchAsyncErrors(async (req, res, next) => {
-  const ticketCount = await Ticket.countDocuments();
+  const ticketCount = await Ticket.countDocuments({ status: "Pending" });
   const ticket = await Ticket.find({ status: "Pending" });
 
   if (!ticket || !ticketCount) {
