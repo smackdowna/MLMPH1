@@ -7,8 +7,7 @@ const product = require("../models/productTransactionModal");
 const ErrorHandler = require("../utils/errorHandler");
 const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 const sendToken = require("../utils/jwtToken");
-const sendEmail = require("../utils/sendEmail.js");
-const crypto = require("crypto");
+const { default: mongoose } = require("mongoose");
 
 // Define the getParentId function
 async function getParentId(leg, parentId) {
@@ -432,20 +431,20 @@ exports.updateUserRoleDead = catchAsyncErrors(async (req, res, next) => {
 
 //binary income
 exports.binaryMonthly = catchAsyncErrors(async (req, res, next) => {
-  const income = await binary.find({ user_id: req.user.id });
+  const income = await binary.find({ user_id: req.user._id });
 
-  const monthlyIncome = income.reduce((acc, income) => {
-    const { month, inc } = income;
-    if (!acc[month]) {
-      acc[month] = 0;
-    }
-    acc[month] += inc;
-    return acc;
-  }, {});
+  // const monthlyIncome = income.reduce((acc, income) => {
+  //   const { month, inc } = income;
+  //   if (!acc[month]) {
+  //     acc[month] = 0;
+  //   }
+  //   acc[month] += inc;
+  //   return acc;
+  // }, {});
 
   res.status(200).json({
     success: true,
-    monthlyIncome,
+    income,
   });
 });
 
@@ -706,7 +705,7 @@ function calculateIncome(
   // Calculate income
   const productPrice = 11000; // Adjust product price as needed
   const bonusPercentage = 0.05; // 5% bonus
-  const income = minCount * productPrice * bonusPercentage * 2;
+  const income = (minCount * productPrice * bonusPercentage * 2)-1100;
 
   // Calculate new carry forwards
   const newTotalLeftCount = totalLeftCount - minCount;

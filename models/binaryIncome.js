@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 
 const BinaryIncomeSchema = new mongoose.Schema({
-    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    user_id: { type:String },
+    //user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     own_id: String,
     name: String,
     email: String,
