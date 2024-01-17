@@ -6,8 +6,8 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 const corsOptions ={
-    origin:'http://localhost:3000',
-    //origin:'https://mlm-premanandchowdhury.vercel.app', 
+    //origin:'http://localhost:3000',
+    origin:'https://mlm-premanandchowdhury.vercel.app', 
     credentials:true,            //access-control-allow-credentials:true
     optionSuccessStatus:200
 }
