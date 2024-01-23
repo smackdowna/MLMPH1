@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const connectDB = require("./config/database");
 
 app.get("/", (req, res) => {
+  console.log("Hi This is working")
   res.send("Working fine");
 });
 
