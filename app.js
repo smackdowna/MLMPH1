@@ -5,13 +5,7 @@ const errorMiddleware = require("./middlewares/error");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
-const corsOptions ={
-    //origin:'http://localhost:3000',
-    origin:'https://mlm-premanandchowdhury.vercel.app', 
-    credentials:true,            //access-control-allow-credentials:true
-    optionSuccessStatus:200
-}
-app.use(cors(corsOptions));
+app.use(cors());
 
 
 app.use(express.json())
