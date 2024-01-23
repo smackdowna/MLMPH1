@@ -5,7 +5,13 @@ const errorMiddleware = require("./middlewares/error");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
-app.use(cors());
+app.use(
+    cors({
+      origin: 'http://shreegoudham.com/',
+      credentials: true,
+      methods: ["GET", "POST", "DELETE", "PUT"],
+    })
+  );
 
 
 app.use(express.json())
