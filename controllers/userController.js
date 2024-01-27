@@ -705,7 +705,7 @@ function calculateIncome(
   // Calculate income
   const productPrice = 11000; // Adjust product price as needed
   const bonusPercentage = 0.05; // 5% bonus
-  const income = (minCount * productPrice * bonusPercentage * 2)-1100;
+  const income = ((minCount * productPrice * bonusPercentage * 2)-1100);
 
   // Calculate new carry forwards
   const newTotalLeftCount = totalLeftCount - minCount;
